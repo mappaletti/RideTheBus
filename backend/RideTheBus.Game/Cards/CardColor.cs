@@ -1,4 +1,4 @@
-namespace RideTheBus.Game;
+namespace RideTheBus.Game.Cards;
 
 public enum CardColor
 {

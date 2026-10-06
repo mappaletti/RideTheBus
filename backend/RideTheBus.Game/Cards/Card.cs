@@ -1,4 +1,4 @@
-namespace RideTheBus.Game;
+namespace RideTheBus.Game.Cards;
 
 public sealed record Card(
     Suit Suit,
