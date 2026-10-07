@@ -21,4 +21,27 @@ public sealed class GameSession
     public decimal Stake { get; }
     public GameStatus Status { get; private set; }
     public GameStage? Stage { get; private set; }
+
+    public void GuessColor(CardColor choice)
+    {
+        if (Status != GameStatus.InProgress || Stage != GameStage.Color) throw new InvalidOperationException();
+
+        if (!Enum.IsDefined(choice))
+        {
+            throw new ArgumentOutOfRangeException(nameof(choice), choice, "Unknown card color");
+        }
+        
+        var card = _cardSource.Draw();
+        _revealedCards.Add(card);
+
+        if (choice == card.Color)
+        {
+            Stage = GameStage.HigherOrLower;
+        }
+        else
+        {
+            Stage = null;
+            Status = GameStatus.Lost;
+        }
+    }
 }
