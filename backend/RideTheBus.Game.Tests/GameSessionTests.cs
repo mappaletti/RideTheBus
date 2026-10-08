@@ -114,4 +114,60 @@ public sealed class GameSessionTests
         Assert.Equal(GameStage.Color, game.Stage);
         Assert.Empty(game.RevealedCards);
     }
+
+    [Fact]
+    public void GuessColor_WhenCorrect_ShouldOfferDoubleStakePayout()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two)});
+        var game = new GameSession(100m, cardSource);
+        
+        // act
+        game.GuessColor(CardColor.Red);
+        
+        // assert
+        Assert.Equal(200m, game.PotentialPayout);
+    }
+
+    [Fact]
+    public void NewGame_ShouldHaveZeroPotentialPayout()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two)});
+        var game = new GameSession(100m, cardSource);
+        
+        // act assert
+        Assert.Equal(0m, game.PotentialPayout);
+    }
+
+    [Fact]
+    public void GuessColor_WhenIncorrect_ShouldHaveZeroPotentialPayout()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two)});
+        var game = new GameSession(100m, cardSource);
+        
+        // act
+        game.GuessColor(CardColor.Black);
+        
+        // assert
+        Assert.Equal(0m, game.PotentialPayout);
+    }
+
+    [Fact]
+    public void CashOut_AfterCorrectColor_ShouldFinalizeDoubleStakePayout()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two)});
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+        
+        // act 
+        game.CashOut();
+        
+        // assert
+        Assert.Equal(200m, game.FinalPayout);
+        Assert.Equal(GameStatus.CashedOut, game.Status);
+        Assert.Null(game.Stage);
+    }
 }
