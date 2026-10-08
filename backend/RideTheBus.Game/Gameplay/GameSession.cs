@@ -6,6 +6,18 @@ public sealed class GameSession
 {
     private readonly ICardSource _cardSource;
     private readonly List<Card> _revealedCards = new();
+    
+    public IReadOnlyList<Card> RevealedCards { get; }
+    public decimal Stake { get; }
+    public GameStatus Status { get; private set; }
+    public GameStage? Stage { get; private set; }
+
+    public decimal PotentialPayout =>
+        Status == GameStatus.InProgress && Stage == GameStage.HigherOrLower 
+            ? Stake * 2 
+            : 0m;
+    
+    public decimal? FinalPayout { get; private set; }
 
     public GameSession(decimal stake, ICardSource cardSource)
     {
@@ -16,11 +28,14 @@ public sealed class GameSession
         RevealedCards = _revealedCards.AsReadOnly();
     }
 
-    public IReadOnlyList<Card> RevealedCards { get; }
-
-    public decimal Stake { get; }
-    public GameStatus Status { get; private set; }
-    public GameStage? Stage { get; private set; }
+    public void CashOut()
+    {
+        if (Status != GameStatus.InProgress || PotentialPayout <= 0m) throw new InvalidOperationException();
+        
+        FinalPayout = PotentialPayout;
+        Status = GameStatus.CashedOut;
+        Stage = null;
+    }
 
     public void GuessColor(CardColor choice)
     {
