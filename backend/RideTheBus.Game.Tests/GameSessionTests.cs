@@ -170,4 +170,20 @@ public sealed class GameSessionTests
         Assert.Equal(GameStatus.CashedOut, game.Status);
         Assert.Null(game.Stage);
     }
+
+    [Fact]
+    public void CashOut_BeforeFirstCorrectGuess_ShouldRejectWithoutChangingState()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two)});
+        var game = new GameSession(100m, cardSource);
+        
+        // act assert
+        Assert.Throws<InvalidOperationException>(() => game.CashOut());
+        
+        Assert.Equal(GameStatus.InProgress, game.Status);
+        Assert.Equal(GameStage.Color, game.Stage);
+        Assert.Null(game.FinalPayout);
+        Assert.Equal(0, cardSource.DrawCallCount);
+    }
 }
