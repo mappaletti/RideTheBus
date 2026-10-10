@@ -186,4 +186,70 @@ public sealed class GameSessionTests
         Assert.Null(game.FinalPayout);
         Assert.Equal(0, cardSource.DrawCallCount);
     }
+
+    [Fact]
+    public void CashOut_AfterLoss_ShouldRejectWithoutChangingState()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two)});
+        var game = new GameSession(100m, cardSource);
+        
+        game.GuessColor(CardColor.Black);
+        var drawCallCount = cardSource.DrawCallCount;
+        var finalPayout = game.FinalPayout;
+        
+        // act assert
+        Assert.Throws<InvalidOperationException>(() => game.CashOut());
+        Assert.Equal(GameStatus.Lost, game.Status);
+        Assert.Null(game.Stage);
+        Assert.Equal(finalPayout, game.FinalPayout);
+        Assert.Equal(drawCallCount, cardSource.DrawCallCount);
+    }
+
+    [Fact]
+    public void GuessColor_WhenIncorrect_ShouldFinalizeZeroPayout()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two)});
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Black);
+        
+        // act assert
+        Assert.Equal(0m, game.FinalPayout);
+    }
+
+    [Fact]
+    public void CashOut_WhenAlreadyCashedOut_ShouldRejectWithoutChangingState()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two)});
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+        game.CashOut();
+        var drawCallCount = cardSource.DrawCallCount;
+        
+        // act assert
+        Assert.Throws<InvalidOperationException>(() => game.CashOut());
+        Assert.Equal(GameStatus.CashedOut, game.Status);
+        Assert.Null(game.Stage);
+        Assert.Equal(200m, game.FinalPayout);
+        Assert.Equal(0m, game.PotentialPayout);
+        Assert.Equal(drawCallCount, cardSource.DrawCallCount);
+    }
+
+    [Fact]
+    public void CashOut_AfterCorrectColor_ShouldNotDrawAnotherCard()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two), new Card(Suit.Spades, Rank.Two) });
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+        var drawCallsBefore = cardSource.DrawCallCount;
+        
+        // act
+        game.CashOut();
+        
+        // assert
+        Assert.Equal(drawCallsBefore, cardSource.DrawCallCount);
+    }
 }
