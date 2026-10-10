@@ -6,18 +6,6 @@ public sealed class GameSession
 {
     private readonly ICardSource _cardSource;
     private readonly List<Card> _revealedCards = new();
-    
-    public IReadOnlyList<Card> RevealedCards { get; }
-    public decimal Stake { get; }
-    public GameStatus Status { get; private set; }
-    public GameStage? Stage { get; private set; }
-
-    public decimal PotentialPayout =>
-        Status == GameStatus.InProgress && Stage == GameStage.HigherOrLower 
-            ? Stake * 2 
-            : 0m;
-    
-    public decimal? FinalPayout { get; private set; }
 
     public GameSession(decimal stake, ICardSource cardSource)
     {
@@ -28,10 +16,27 @@ public sealed class GameSession
         RevealedCards = _revealedCards.AsReadOnly();
     }
 
+    public IReadOnlyList<Card> RevealedCards { get; }
+    public decimal Stake { get; }
+    public GameStatus Status { get; private set; }
+    public GameStage? Stage { get; private set; }
+
+    public decimal PotentialPayout =>
+        Status != GameStatus.InProgress
+            ? 0m
+            : Stage switch
+            {
+                GameStage.HigherOrLower => Stake * 2m,
+                GameStage.InsideOrOutside => Stake * 3m,
+                _ => 0m
+            };
+
+    public decimal? FinalPayout { get; private set; }
+
     public void CashOut()
     {
         if (Status != GameStatus.InProgress || PotentialPayout <= 0m) throw new InvalidOperationException();
-        
+
         FinalPayout = PotentialPayout;
         Status = GameStatus.CashedOut;
         Stage = null;
@@ -42,16 +47,41 @@ public sealed class GameSession
         if (Status != GameStatus.InProgress || Stage != GameStage.Color) throw new InvalidOperationException();
 
         if (!Enum.IsDefined(choice))
-        {
             throw new ArgumentOutOfRangeException(nameof(choice), choice, "Unknown card color");
-        }
-        
+
         var card = _cardSource.Draw();
         _revealedCards.Add(card);
 
         if (choice == card.Color)
         {
             Stage = GameStage.HigherOrLower;
+        }
+        else
+        {
+            Stage = null;
+            Status = GameStatus.Lost;
+            FinalPayout = 0m;
+        }
+    }
+
+    public void GuessHigherOrLower(HigherOrLowerChoice choice)
+    {
+        if (Status != GameStatus.InProgress || Stage != GameStage.HigherOrLower) throw new InvalidOperationException();
+
+        if (!Enum.IsDefined(choice))
+            throw new ArgumentOutOfRangeException(nameof(choice), choice, "Unknown higher or lower choice");
+
+        var referenceCard = _revealedCards[0];
+        var card = _cardSource.Draw();
+        _revealedCards.Add(card);
+
+        if (card.Rank > referenceCard.Rank && choice == HigherOrLowerChoice.Higher)
+        {
+            Stage = GameStage.InsideOrOutside;
+        }
+        else if (card.Rank < referenceCard.Rank && choice == HigherOrLowerChoice.Lower)
+        {
+            Stage = GameStage.InsideOrOutside;
         }
         else
         {
