@@ -57,6 +57,7 @@ public sealed class GameSession
         {
             Stage = null;
             Status = GameStatus.Lost;
+            FinalPayout = 0m;
         }
     }
 }
