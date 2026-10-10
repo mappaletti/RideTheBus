@@ -93,7 +93,7 @@ public sealed class GameSessionTests
         var game = new GameSession(100m, cardSource);
         game.GuessColor(CardColor.Black);
         var drawCallsBefore = cardSource.DrawCallCount;
-        
+
         // act & assert
         Assert.Throws<InvalidOperationException>(() => game.GuessColor(CardColor.Red));
         Assert.Equal(drawCallsBefore, cardSource.DrawCallCount);
@@ -106,7 +106,7 @@ public sealed class GameSessionTests
         var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two), new Card(Suit.Spades, Rank.Two) });
         var game = new GameSession(100m, cardSource);
         var drawCallsBefore = cardSource.DrawCallCount;
-        
+
         // act assert
         Assert.Throws<ArgumentOutOfRangeException>(() => game.GuessColor((CardColor)666));
         Assert.Equal(drawCallsBefore, cardSource.DrawCallCount);
@@ -119,12 +119,12 @@ public sealed class GameSessionTests
     public void GuessColor_WhenCorrect_ShouldOfferDoubleStakePayout()
     {
         // arrange
-        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two)});
+        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two) });
         var game = new GameSession(100m, cardSource);
-        
+
         // act
         game.GuessColor(CardColor.Red);
-        
+
         // assert
         Assert.Equal(200m, game.PotentialPayout);
     }
@@ -133,9 +133,9 @@ public sealed class GameSessionTests
     public void NewGame_ShouldHaveZeroPotentialPayout()
     {
         // arrange
-        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two)});
+        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two) });
         var game = new GameSession(100m, cardSource);
-        
+
         // act assert
         Assert.Equal(0m, game.PotentialPayout);
     }
@@ -144,12 +144,12 @@ public sealed class GameSessionTests
     public void GuessColor_WhenIncorrect_ShouldHaveZeroPotentialPayout()
     {
         // arrange
-        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two)});
+        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two) });
         var game = new GameSession(100m, cardSource);
-        
+
         // act
         game.GuessColor(CardColor.Black);
-        
+
         // assert
         Assert.Equal(0m, game.PotentialPayout);
     }
@@ -158,13 +158,13 @@ public sealed class GameSessionTests
     public void CashOut_AfterCorrectColor_ShouldFinalizeDoubleStakePayout()
     {
         // arrange
-        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two)});
+        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two) });
         var game = new GameSession(100m, cardSource);
         game.GuessColor(CardColor.Red);
-        
+
         // act 
         game.CashOut();
-        
+
         // assert
         Assert.Equal(200m, game.FinalPayout);
         Assert.Equal(GameStatus.CashedOut, game.Status);
@@ -175,12 +175,12 @@ public sealed class GameSessionTests
     public void CashOut_BeforeFirstCorrectGuess_ShouldRejectWithoutChangingState()
     {
         // arrange
-        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two)});
+        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two) });
         var game = new GameSession(100m, cardSource);
-        
+
         // act assert
         Assert.Throws<InvalidOperationException>(() => game.CashOut());
-        
+
         Assert.Equal(GameStatus.InProgress, game.Status);
         Assert.Equal(GameStage.Color, game.Stage);
         Assert.Null(game.FinalPayout);
@@ -191,13 +191,13 @@ public sealed class GameSessionTests
     public void CashOut_AfterLoss_ShouldRejectWithoutChangingState()
     {
         // arrange
-        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two)});
+        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two) });
         var game = new GameSession(100m, cardSource);
-        
+
         game.GuessColor(CardColor.Black);
         var drawCallCount = cardSource.DrawCallCount;
         var finalPayout = game.FinalPayout;
-        
+
         // act assert
         Assert.Throws<InvalidOperationException>(() => game.CashOut());
         Assert.Equal(GameStatus.Lost, game.Status);
@@ -210,10 +210,10 @@ public sealed class GameSessionTests
     public void GuessColor_WhenIncorrect_ShouldFinalizeZeroPayout()
     {
         // arrange
-        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two)});
+        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two) });
         var game = new GameSession(100m, cardSource);
         game.GuessColor(CardColor.Black);
-        
+
         // act assert
         Assert.Equal(0m, game.FinalPayout);
     }
@@ -222,12 +222,12 @@ public sealed class GameSessionTests
     public void CashOut_WhenAlreadyCashedOut_ShouldRejectWithoutChangingState()
     {
         // arrange
-        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two)});
+        var cardSource = new StubCardSource(new[] { new Card(Suit.Hearts, Rank.Two) });
         var game = new GameSession(100m, cardSource);
         game.GuessColor(CardColor.Red);
         game.CashOut();
         var drawCallCount = cardSource.DrawCallCount;
-        
+
         // act assert
         Assert.Throws<InvalidOperationException>(() => game.CashOut());
         Assert.Equal(GameStatus.CashedOut, game.Status);
@@ -245,11 +245,264 @@ public sealed class GameSessionTests
         var game = new GameSession(100m, cardSource);
         game.GuessColor(CardColor.Red);
         var drawCallsBefore = cardSource.DrawCallCount;
-        
+
         // act
         game.CashOut();
-        
+
         // assert
         Assert.Equal(drawCallsBefore, cardSource.DrawCallCount);
+    }
+
+    [Fact]
+    public void GuessHigherOrLower_WhenHigherIsCorrect_ShouldAdvanceToInsideOrOutside()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            { new Card(Suit.Hearts, Rank.Five), new Card(Suit.Spades, Rank.Ten) });
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+
+        // act
+        game.GuessHigherOrLower(HigherOrLowerChoice.Higher);
+
+        // assert 
+        Assert.Equal(GameStatus.InProgress, game.Status);
+        Assert.Equal(GameStage.InsideOrOutside, game.Stage);
+    }
+
+    [Fact]
+    public void GuessHigherOrLower_WhenLowerIsCorrect_ShouldAdvanceToInsideOrOutside()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            { new Card(Suit.Hearts, Rank.Ten), new Card(Suit.Spades, Rank.Five) });
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+
+        // act
+        game.GuessHigherOrLower(HigherOrLowerChoice.Lower);
+
+        // assert 
+        Assert.Equal(GameStatus.InProgress, game.Status);
+        Assert.Equal(GameStage.InsideOrOutside, game.Stage);
+    }
+
+    [Fact]
+    public void GuessHigherOrLower_WhenHigherIsIncorrect_ShouldLoseGame()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            { new Card(Suit.Hearts, Rank.Ten), new Card(Suit.Spades, Rank.Five) });
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+
+        // act
+        game.GuessHigherOrLower(HigherOrLowerChoice.Higher);
+
+        // assert 
+        Assert.Null(game.Stage);
+        Assert.Equal(GameStatus.Lost, game.Status);
+        Assert.Equal(0m, game.FinalPayout);
+    }
+
+    [Fact]
+    public void GuessHigherOrLower_WhenLowerIsIncorrect_ShouldLoseGame()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            { new Card(Suit.Hearts, Rank.Five), new Card(Suit.Spades, Rank.Ten) });
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+
+        // act
+        game.GuessHigherOrLower(HigherOrLowerChoice.Lower);
+
+        // assert 
+        Assert.Null(game.Stage);
+        Assert.Equal(GameStatus.Lost, game.Status);
+        Assert.Equal(0m, game.FinalPayout);
+    }
+
+    [Theory]
+    [InlineData(HigherOrLowerChoice.Higher)]
+    [InlineData(HigherOrLowerChoice.Lower)]
+    public void GuessHigherOrLower_WhenRanksAreEqual_ShouldLoseGame(HigherOrLowerChoice choice)
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            { new Card(Suit.Hearts, Rank.Five), new Card(Suit.Spades, Rank.Five) });
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+
+        // act 
+        game.GuessHigherOrLower(choice);
+
+        // assert 
+        Assert.Null(game.Stage);
+        Assert.Equal(GameStatus.Lost, game.Status);
+        Assert.Equal(0m, game.FinalPayout);
+    }
+
+    [Theory]
+    [InlineData(Rank.Five, Rank.Ten, HigherOrLowerChoice.Higher)]
+    [InlineData(Rank.Ten, Rank.Five, HigherOrLowerChoice.Lower)]
+    public void GuessHigherOrLower_WhenCorrect_ShouldOfferTripleStakePayout(
+        Rank firstRank,
+        Rank secondRank,
+        HigherOrLowerChoice choice)
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            { new Card(Suit.Hearts, firstRank), new Card(Suit.Spades, secondRank) });
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+
+        // act
+        game.GuessHigherOrLower(choice);
+
+        // assert
+        Assert.Equal(300m, game.PotentialPayout);
+    }
+
+    [Fact]
+    public void CashOut_AfterCorrectHigherOrLower_ShouldFinalizeTripleStakePayout()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            { new Card(Suit.Hearts, Rank.Five), new Card(Suit.Spades, Rank.Ten) });
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+
+        // act
+        game.GuessHigherOrLower(HigherOrLowerChoice.Higher);
+        game.CashOut();
+
+        // assert
+        Assert.Equal(300m, game.FinalPayout);
+        Assert.Null(game.Stage);
+        Assert.Equal(GameStatus.CashedOut, game.Status);
+        Assert.Equal(0m, game.PotentialPayout);
+    }
+
+    [Fact]
+    public void GuessHigherOrLower_BeforeColorGuess_ShouldRejectWithoutChangingState()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            { new Card(Suit.Hearts, Rank.Five), new Card(Suit.Spades, Rank.Ten) });
+        var game = new GameSession(100m, cardSource);
+
+        // act assert
+        Assert.Throws<InvalidOperationException>(() => game.GuessHigherOrLower(HigherOrLowerChoice.Higher));
+        Assert.Equal(GameStatus.InProgress, game.Status);
+        Assert.Equal(GameStage.Color, game.Stage);
+        Assert.Empty(game.RevealedCards);
+        Assert.Null(game.FinalPayout);
+        Assert.Equal(0, cardSource.DrawCallCount);
+    }
+
+    [Fact]
+    public void GuessHigherOrLower_WithInvalidChoice_ShouldRejectWithoutChangingState()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            { new Card(Suit.Hearts, Rank.Five), new Card(Suit.Spades, Rank.Ten) });
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+        var drawCallCount = cardSource.DrawCallCount;
+
+        // act assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => game.GuessHigherOrLower((HigherOrLowerChoice)666));
+        Assert.Equal(GameStatus.InProgress, game.Status);
+        Assert.Equal(GameStage.HigherOrLower, game.Stage);
+        Assert.Single(game.RevealedCards);
+        Assert.Null(game.FinalPayout);
+        Assert.Equal(drawCallCount, cardSource.DrawCallCount);
+        Assert.Equal(200m, game.PotentialPayout);
+    }
+
+    [Fact]
+    public void GuessHigherOrLower_AfterCorrectGuess_ShouldRejectWithoutDrawingCard()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            { new Card(Suit.Hearts, Rank.Five), new Card(Suit.Spades, Rank.Ten), new Card(Suit.Diamonds, Rank.Ace) });
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+        game.GuessHigherOrLower(HigherOrLowerChoice.Higher);
+        var drawCallCount = cardSource.DrawCallCount;
+
+        // act assert
+        Assert.Throws<InvalidOperationException>(() => game.GuessHigherOrLower(HigherOrLowerChoice.Higher));
+        Assert.Equal(drawCallCount, cardSource.DrawCallCount);
+        Assert.Equal(2, game.RevealedCards.Count);
+        Assert.Equal(GameStage.InsideOrOutside, game.Stage);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GuessHigherOrLower_AfterGameEnds_ShouldRejectWithoutChangingState(
+        bool cashOut)
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+        {
+            new Card(Suit.Hearts, Rank.Five),
+            new Card(Suit.Spades, Rank.Ten),
+            new Card(Suit.Diamonds, Rank.Ace)
+        });
+
+        var game = new GameSession(100m, cardSource);
+
+        // act
+        if (cashOut)
+        {
+            game.GuessColor(CardColor.Red);
+            game.CashOut();
+        }
+        else
+        {
+            game.GuessColor(CardColor.Black);
+        }
+
+        var status = game.Status;
+        var finalPayout = game.FinalPayout;
+        var drawCallCount = cardSource.DrawCallCount;
+
+        // assert
+        Assert.Throws<InvalidOperationException>(() => game.GuessHigherOrLower(HigherOrLowerChoice.Higher));
+
+        Assert.Equal(status, game.Status);
+        Assert.Equal(finalPayout, game.FinalPayout);
+        Assert.Equal(drawCallCount, cardSource.DrawCallCount);
+        Assert.Null(game.Stage);
+        Assert.Single(game.RevealedCards);
+    }
+    
+    [Theory]
+    [InlineData(HigherOrLowerChoice.Higher)]
+    [InlineData(HigherOrLowerChoice.Lower)]
+    public void GuessHigherOrLower_ShouldRevealDrawnCard(
+        HigherOrLowerChoice choice)
+    {
+        // arrange
+        var expectedCard = new Card(Suit.Spades, Rank.Ten);
+
+        var cardSource = new StubCardSource(new[]
+        {
+            new Card(Suit.Hearts, Rank.Five),
+            expectedCard
+        });
+
+        var game = new GameSession(100m, cardSource);
+
+        // act
+        game.GuessColor(CardColor.Red);
+        game.GuessHigherOrLower(choice);
+
+        // assert
+        Assert.Equal(2, game.RevealedCards.Count);
+        Assert.Equal(expectedCard, game.RevealedCards[1]);
     }
 }
