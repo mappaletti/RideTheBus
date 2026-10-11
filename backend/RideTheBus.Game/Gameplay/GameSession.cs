@@ -90,4 +90,38 @@ public sealed class GameSession
             FinalPayout = 0m;
         }
     }
+
+    public void GuessInsideOrOutside(InsideOrOutsideChoice choice)
+    {
+        if (Status != GameStatus.InProgress || Stage != GameStage.InsideOrOutside) throw new InvalidOperationException();
+        
+        if (!Enum.IsDefined(choice))
+            throw new ArgumentOutOfRangeException(nameof(choice), choice, "Unknown inside or outside choice");
+        
+        var lowerRank = _revealedCards[0].Rank < _revealedCards[1].Rank
+            ? _revealedCards[0].Rank
+            : _revealedCards[1].Rank;
+        
+        var higherRank = _revealedCards[0].Rank > _revealedCards[1].Rank
+            ? _revealedCards[0].Rank
+            : _revealedCards[1].Rank;
+        
+        var card =  _cardSource.Draw();
+        _revealedCards.Add(card);
+
+        if (choice == InsideOrOutsideChoice.Inside && card.Rank > lowerRank && card.Rank < higherRank)
+        {
+            Stage = GameStage.Suit;
+        }
+        else if (choice == InsideOrOutsideChoice.Outside && (card.Rank < lowerRank || card.Rank > higherRank))
+        {
+            Stage = GameStage.Suit;
+        }
+        else
+        {
+            Stage = null;
+            Status = GameStatus.Lost;
+            FinalPayout = 0m;
+        }
+    }
 }
