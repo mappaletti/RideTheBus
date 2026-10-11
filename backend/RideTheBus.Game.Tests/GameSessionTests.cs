@@ -505,4 +505,136 @@ public sealed class GameSessionTests
         Assert.Equal(2, game.RevealedCards.Count);
         Assert.Equal(expectedCard, game.RevealedCards[1]);
     }
+
+    [Fact]
+    public void GuessInsideOrOutside_WhenInsideIsCorrect_ShouldAdvanceToSuit()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            {
+                new Card(Suit.Hearts, Rank.Five),
+                new Card(Suit.Spades, Rank.Ten),
+                new Card(Suit.Diamonds, Rank.Seven),
+            }
+        );
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+        game.GuessHigherOrLower(HigherOrLowerChoice.Higher);
+        
+        // act
+        game.GuessInsideOrOutside(InsideOrOutsideChoice.Inside);
+        
+        // assert
+        Assert.Equal(GameStage.Suit, game.Stage);
+        Assert.Equal(GameStatus.InProgress, game.Status);
+    }
+
+    [Theory]
+    [InlineData(Rank.Three)]
+    [InlineData(Rank.Queen)]
+    public void GuessInsideOrOutside_WhenOutsideIsCorrect_ShouldAdvanceToSuit(
+        Rank thirdRank)
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            {
+                new Card(Suit.Hearts, Rank.Five),
+                new Card(Suit.Spades, Rank.Ten),
+                new Card(Suit.Diamonds, thirdRank),
+            }
+        );
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+        game.GuessHigherOrLower(HigherOrLowerChoice.Higher);
+        
+        // act
+        game.GuessInsideOrOutside(InsideOrOutsideChoice.Outside);
+        
+        // assert
+        Assert.Equal(GameStage.Suit, game.Stage);
+        Assert.Equal(GameStatus.InProgress, game.Status);
+    }
+
+    [Fact]
+    public void GuessInsideOrOutside_WhenInsideChosenAndCardAboveRange_ShouldLoseGame()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            {
+                new Card(Suit.Hearts, Rank.Five),
+                new Card(Suit.Spades, Rank.Ten),
+                new Card(Suit.Diamonds, Rank.Ace),
+            }
+        );
+        
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+        game.GuessHigherOrLower(HigherOrLowerChoice.Higher);
+        
+        // act
+        game.GuessInsideOrOutside(InsideOrOutsideChoice.Inside);
+        
+        // assert 
+        Assert.Null(game.Stage);
+        Assert.Equal(GameStatus.Lost, game.Status);
+        Assert.Equal(0m, game.FinalPayout);
+    }
+
+    [Theory]
+    [InlineData(Rank.Five, InsideOrOutsideChoice.Inside)]
+    [InlineData(Rank.Five, InsideOrOutsideChoice.Outside)]
+    [InlineData(Rank.Ten, InsideOrOutsideChoice.Inside)]
+    [InlineData(Rank.Ten, InsideOrOutsideChoice.Outside)]
+    public void GuessInsideOrOutside_WhenCardIsOnBoundary_ShouldLoseGame(
+        Rank thirdRank,
+        InsideOrOutsideChoice choice)
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            {
+                new Card(Suit.Hearts, Rank.Five),
+                new Card(Suit.Spades, Rank.Ten),
+                new Card(Suit.Diamonds, thirdRank),
+            }
+        );
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+        game.GuessHigherOrLower(HigherOrLowerChoice.Higher);
+        
+        // act
+        game.GuessInsideOrOutside(choice);
+        
+        // assert 
+        Assert.Null(game.Stage);
+        Assert.Equal(GameStatus.Lost, game.Status);
+        Assert.Equal(0m, game.FinalPayout);
+    }
+
+    [Theory]
+    [InlineData(Rank.Seven, InsideOrOutsideChoice.Inside)]
+    [InlineData(Rank.Three, InsideOrOutsideChoice.Outside)]
+    [InlineData(Rank.Queen, InsideOrOutsideChoice.Outside)]
+    public void GuessInsideOrOutside_WhenReferenceCardsAreDescending_ShouldAdvanceToSuit(
+        Rank thirdRank,
+        InsideOrOutsideChoice choice)
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            {
+                new Card(Suit.Spades, Rank.Ten),
+                new Card(Suit.Hearts, Rank.Five),
+                new Card(Suit.Diamonds, thirdRank),
+            }
+        );
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Black);
+        game.GuessHigherOrLower(HigherOrLowerChoice.Lower);
+        
+        // act 
+        game.GuessInsideOrOutside(choice);
+        
+        // assert
+        Assert.Equal(GameStage.Suit, game.Stage);
+        Assert.Equal(GameStatus.InProgress, game.Status);
+    }
 }
