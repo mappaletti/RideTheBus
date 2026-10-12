@@ -637,4 +637,56 @@ public sealed class GameSessionTests
         Assert.Equal(GameStage.Suit, game.Stage);
         Assert.Equal(GameStatus.InProgress, game.Status);
     }
+
+    [Theory]
+    [InlineData(Rank.Seven, InsideOrOutsideChoice.Inside)]
+    [InlineData(Rank.Queen, InsideOrOutsideChoice.Outside)]
+    public void GuessInsideOrOutside_WhenCorrect_ShouldOfferQuadrupleStakePayout(
+        Rank thirdRank,
+        InsideOrOutsideChoice choice)
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            {
+                new Card(Suit.Hearts, Rank.Five),
+                new Card(Suit.Spades, Rank.Ten),
+                new Card(Suit.Diamonds, thirdRank),
+            }
+        );
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+        game.GuessHigherOrLower(HigherOrLowerChoice.Higher);
+        
+        // act
+        game.GuessInsideOrOutside(choice);
+        
+        // assert
+        Assert.Equal(400m, game.PotentialPayout);
+    }
+
+    [Fact]
+    public void CashOut_AfterCorrectInsideOrOutside_ShouldFinalizeQuadrupleStakePayout()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            {
+                new Card(Suit.Hearts, Rank.Five),
+                new Card(Suit.Spades, Rank.Ten),
+                new Card(Suit.Diamonds, Rank.Seven),
+            }
+        );
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+        game.GuessHigherOrLower(HigherOrLowerChoice.Higher);
+        
+        // act
+        game.GuessInsideOrOutside(InsideOrOutsideChoice.Inside);
+        game.CashOut();
+        
+        // assert
+        Assert.Equal(400m, game.FinalPayout);
+        Assert.Equal(GameStatus.CashedOut, game.Status);
+        Assert.Null(game.Stage);
+        Assert.Equal(0m, game.PotentialPayout);
+    }
 }
