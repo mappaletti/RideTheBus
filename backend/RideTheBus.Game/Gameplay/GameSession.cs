@@ -28,6 +28,7 @@ public sealed class GameSession
             {
                 GameStage.HigherOrLower => Stake * 2m,
                 GameStage.InsideOrOutside => Stake * 3m,
+                GameStage.Suit => Stake * 4m,
                 _ => 0m
             };
 
