@@ -743,4 +743,89 @@ public sealed class GameSessionTests
         Assert.Equal(0m, game.FinalPayout);
         Assert.Equal(0m, game.PotentialPayout);
     }
+
+    [Fact]
+    public void GuessSuit_WithInvalidChoice_ShouldRejectWithoutChangingState()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            {
+                new Card(Suit.Hearts, Rank.Five),
+                new Card(Suit.Spades, Rank.Ten),
+                new Card(Suit.Diamonds, Rank.Seven),
+                new Card(Suit.Clubs, Rank.Ace),
+            }
+        );
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+        game.GuessHigherOrLower(HigherOrLowerChoice.Higher);
+        game.GuessInsideOrOutside(InsideOrOutsideChoice.Inside);
+        var drawCallCount = cardSource.DrawCallCount;
+        
+        // act assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => game.GuessSuit((Suit)666));
+        Assert.Equal(drawCallCount, cardSource.DrawCallCount);
+        Assert.Equal(GameStatus.InProgress, game.Status);
+        Assert.Equal(GameStage.Suit, game.Stage);
+        Assert.Equal(3, game.RevealedCards.Count);
+        Assert.Equal(400m, game.PotentialPayout);
+        Assert.Null(game.FinalPayout);
+    }
+
+    [Fact]
+    public void GuessSuit_AfterWin_ShouldRejectWithoutChangingState()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            {
+                new Card(Suit.Hearts, Rank.Five),
+                new Card(Suit.Spades, Rank.Ten),
+                new Card(Suit.Diamonds, Rank.Seven),
+                new Card(Suit.Clubs, Rank.Ace),
+            }
+        );
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+        game.GuessHigherOrLower(HigherOrLowerChoice.Higher);
+        game.GuessInsideOrOutside(InsideOrOutsideChoice.Inside);
+        game.GuessSuit(Suit.Clubs);
+        var drawCallCount = cardSource.DrawCallCount;
+        
+        // act 
+        Assert.Throws<InvalidOperationException>(() => game.GuessSuit(Suit.Clubs));
+        Assert.Equal(drawCallCount, cardSource.DrawCallCount);
+        Assert.Equal(GameStatus.Won, game.Status);
+        Assert.Null(game.Stage);
+        Assert.Equal(2000m, game.FinalPayout);
+        Assert.Equal(4, game.RevealedCards.Count);
+    }
+
+    [Theory]
+    [InlineData(Suit.Spades)]
+    [InlineData(Suit.Hearts)]
+    public void GuessSuit_ShouldRevealDrawnCard(Suit choice)
+    {
+        // arrange
+        var expectedCard = new Card(Suit.Spades, Rank.Ace);
+        var cardSource = new StubCardSource(new[]
+            {
+                new Card(Suit.Hearts, Rank.Five),
+                new Card(Suit.Spades, Rank.Ten),
+                new Card(Suit.Diamonds, Rank.Seven),
+                expectedCard,
+            }
+        );
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+        game.GuessHigherOrLower(HigherOrLowerChoice.Higher);
+        game.GuessInsideOrOutside(InsideOrOutsideChoice.Inside);
+        
+        // act
+        game.GuessSuit(choice);
+        
+        // assert
+        Assert.Equal(4, game.RevealedCards.Count);
+        Assert.Equal(expectedCard, game.RevealedCards[3]);
+    }
+    
 }
