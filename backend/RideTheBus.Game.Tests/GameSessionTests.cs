@@ -689,4 +689,58 @@ public sealed class GameSessionTests
         Assert.Null(game.Stage);
         Assert.Equal(0m, game.PotentialPayout);
     }
+
+    [Fact]
+    public void GuessSuit_WhenCorrect_ShouldWinWithTwentyfoldPayout()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            {
+                new Card(Suit.Hearts, Rank.Five),
+                new Card(Suit.Spades, Rank.Ten),
+                new Card(Suit.Diamonds, Rank.Seven),
+                new Card(Suit.Clubs, Rank.Ace),
+            }
+        );
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+        game.GuessHigherOrLower(HigherOrLowerChoice.Higher);
+        game.GuessInsideOrOutside(InsideOrOutsideChoice.Inside);
+        
+        // act
+        game.GuessSuit(Suit.Clubs);
+        
+        // assert
+        Assert.Equal(GameStatus.Won, game.Status);
+        Assert.Null(game.Stage);
+        Assert.Equal(2000m, game.FinalPayout);
+        Assert.Equal(0m, game.PotentialPayout);
+    }
+
+    [Fact]
+    public void GuessSuit_WhenIncorrect_ShouldLoseWithZeroPayout()
+    {
+        // arrange
+        var cardSource = new StubCardSource(new[]
+            {
+                new Card(Suit.Hearts, Rank.Five),
+                new Card(Suit.Spades, Rank.Ten),
+                new Card(Suit.Diamonds, Rank.Seven),
+                new Card(Suit.Clubs, Rank.Ace),
+            }
+        );
+        var game = new GameSession(100m, cardSource);
+        game.GuessColor(CardColor.Red);
+        game.GuessHigherOrLower(HigherOrLowerChoice.Higher);
+        game.GuessInsideOrOutside(InsideOrOutsideChoice.Inside);
+        
+        // act
+        game.GuessSuit(Suit.Hearts);
+        
+        // assert
+        Assert.Equal(GameStatus.Lost, game.Status);
+        Assert.Null(game.Stage);
+        Assert.Equal(0m, game.FinalPayout);
+        Assert.Equal(0m, game.PotentialPayout);
+    }
 }
