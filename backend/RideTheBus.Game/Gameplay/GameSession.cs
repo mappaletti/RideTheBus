@@ -97,7 +97,7 @@ public sealed class GameSession
         if (Status != GameStatus.InProgress || Stage != GameStage.InsideOrOutside) throw new InvalidOperationException();
         
         if (!Enum.IsDefined(choice))
-            throw new ArgumentOutOfRangeException(nameof(choice), choice, "Unknown inside or outside choice");
+                     throw new ArgumentOutOfRangeException(nameof(choice), choice, "Unknown inside or outside choice");
         
         var lowerRank = _revealedCards[0].Rank < _revealedCards[1].Rank
             ? _revealedCards[0].Rank
@@ -117,6 +117,30 @@ public sealed class GameSession
         else if (choice == InsideOrOutsideChoice.Outside && (card.Rank < lowerRank || card.Rank > higherRank))
         {
             Stage = GameStage.Suit;
+        }
+        else
+        {
+            Stage = null;
+            Status = GameStatus.Lost;
+            FinalPayout = 0m;
+        }
+    }
+
+    public void GuessSuit(Suit choice)
+    {
+        if (Status != GameStatus.InProgress || Stage != GameStage.Suit) throw new InvalidOperationException();
+        
+        if (!Enum.IsDefined(choice))
+            throw new ArgumentOutOfRangeException(nameof(choice), choice, "Unknown suit choice");
+        
+        var card =  _cardSource.Draw();
+        _revealedCards.Add(card);
+
+        if (choice == card.Suit)
+        {
+            FinalPayout = Stake * 20m;
+            Status = GameStatus.Won;
+            Stage = null;
         }
         else
         {
