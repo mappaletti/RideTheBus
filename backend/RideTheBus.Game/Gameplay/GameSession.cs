@@ -67,9 +67,7 @@ public sealed class GameSession
         }
         else
         {
-            Stage = null;
-            Status = GameStatus.Lost;
-            FinalPayout = 0m;
+            Lose();
         }
     }
 
@@ -94,9 +92,7 @@ public sealed class GameSession
         }
         else
         {
-            Stage = null;
-            Status = GameStatus.Lost;
-            FinalPayout = 0m;
+            Lose();
         }
     }
 
@@ -128,9 +124,7 @@ public sealed class GameSession
         }
         else
         {
-            Stage = null;
-            Status = GameStatus.Lost;
-            FinalPayout = 0m;
+            Lose();
         }
     }
 
@@ -152,9 +146,15 @@ public sealed class GameSession
         }
         else
         {
-            Stage = null;
-            Status = GameStatus.Lost;
-            FinalPayout = 0m;
+            Lose();
         }
     }
+
+    private void Lose()
+    {
+        Stage = null;
+        Status = GameStatus.Lost;
+        FinalPayout = 0m;
+    }
+
 }
