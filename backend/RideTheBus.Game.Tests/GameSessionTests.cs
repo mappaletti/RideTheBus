@@ -827,5 +827,45 @@ public sealed class GameSessionTests
         Assert.Equal(4, game.RevealedCards.Count);
         Assert.Equal(expectedCard, game.RevealedCards[3]);
     }
+
+    [Fact]
+    public void NewGame_WithNullCardSource_ShouldThrowArgumentNullException()
+    {
+        // arrange act assert
+        Assert.Throws<ArgumentNullException>(
+            () => new GameSession(100m, null!));
+    }
+
+    [Theory]
+    [InlineData(-100)]
+    [InlineData(0)]
+    [InlineData(0.5)]
+    public void NewGame_WithStakeBelowMinimum_ShouldThrowArgumentOutOfRangeException(
+        double stake)
+    {
+        // arrange
+        var cardSource = new StubCardSource([]);
+        
+        // act assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => new GameSession((decimal)stake, cardSource));
+    }
+     
+    public static IEnumerable<object[]> StakesWithTooManyDecimalPlaces =>
+        new[]
+        {
+            new object[] { 1.001m },
+            new object[] { 100.999m }
+        };
     
+    [Theory]
+    [MemberData(nameof(StakesWithTooManyDecimalPlaces))]
+    public void NewGame_WithMoreThanTwoDecimalPlaces_ShouldThrowArgumentOutOfRangeException(
+        decimal stake)
+    {
+        // arrange
+        var cardSource = new StubCardSource([]);
+        
+        // act assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => new GameSession(stake, cardSource));
+    }
 }
