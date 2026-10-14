@@ -868,4 +868,14 @@ public sealed class GameSessionTests
         // act assert
         Assert.Throws<ArgumentOutOfRangeException>(() => new GameSession(stake, cardSource));
     }
+
+    [Fact]
+    public void NewGame_WithStakeThatWouldOverflowMaximumPayout_ShouldThrowArgumentOutOfRangeException()
+    {
+        // arrange
+        var cardSource = new StubCardSource([]);
+        
+        // act assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => new GameSession(decimal.MaxValue, cardSource));
+    }
 }
