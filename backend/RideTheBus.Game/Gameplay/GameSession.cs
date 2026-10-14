@@ -16,6 +16,9 @@ public sealed class GameSession
         
         if (stake != decimal.Round(stake, 2))
             throw new ArgumentOutOfRangeException(nameof(stake), stake, "Stake must have at most two decimal places.");
+
+        if (stake > decimal.MaxValue / MaximumMultiplier) 
+            throw new ArgumentOutOfRangeException(nameof(stake), stake, "Stake is too large and may cause an overflow.");
         
         _cardSource = cardSource;
         Stake = stake;
@@ -28,6 +31,8 @@ public sealed class GameSession
     public decimal Stake { get; }
     public GameStatus Status { get; private set; }
     public GameStage? Stage { get; private set; }
+    private const decimal MaximumMultiplier = 20m;
+
 
     public decimal PotentialPayout =>
         Status != GameStatus.InProgress
@@ -140,7 +145,7 @@ public sealed class GameSession
 
         if (choice == card.Suit)
         {
-            FinalPayout = Stake * 20m;
+            FinalPayout = Stake * MaximumMultiplier;
             Status = GameStatus.Won;
             Stage = null;
         }
