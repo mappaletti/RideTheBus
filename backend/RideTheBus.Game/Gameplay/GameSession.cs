@@ -9,10 +9,18 @@ public sealed class GameSession
 
     public GameSession(decimal stake, ICardSource cardSource)
     {
+        ArgumentNullException.ThrowIfNull(cardSource);
+        
+        if (stake < 1m)
+            throw new ArgumentOutOfRangeException(nameof(stake), stake, "Stake must be at least 1.");
+        
+        if (stake != decimal.Round(stake, 2))
+            throw new ArgumentOutOfRangeException(nameof(stake), stake, "Stake must have at most two decimal places.");
+        
+        _cardSource = cardSource;
         Stake = stake;
         Status = GameStatus.InProgress;
         Stage = GameStage.Color;
-        _cardSource = cardSource;
         RevealedCards = _revealedCards.AsReadOnly();
     }
 
@@ -129,11 +137,11 @@ public sealed class GameSession
     public void GuessSuit(Suit choice)
     {
         if (Status != GameStatus.InProgress || Stage != GameStage.Suit) throw new InvalidOperationException();
-        
+
         if (!Enum.IsDefined(choice))
             throw new ArgumentOutOfRangeException(nameof(choice), choice, "Unknown suit choice");
-        
-        var card =  _cardSource.Draw();
+
+        var card = _cardSource.Draw();
         _revealedCards.Add(card);
 
         if (choice == card.Suit)
