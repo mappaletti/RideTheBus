@@ -58,7 +58,9 @@ public sealed class GameSession
 
     public void GuessColor(CardColor choice)
     {
-        if (Status != GameStatus.InProgress || Stage != GameStage.Color) throw new InvalidOperationException();
+        if (Status != GameStatus.InProgress || Stage != GameStage.Color)
+            throw new InvalidOperationException(
+            $"Cannot cash out: status is {Status}, stage is {Stage}, potential payout is {PotentialPayout}");
 
         if (!Enum.IsDefined(choice))
             throw new ArgumentOutOfRangeException(nameof(choice), choice, "Unknown card color");
