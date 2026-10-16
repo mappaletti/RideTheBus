@@ -12,7 +12,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\RideTheBus.Application\RideTheBus.Application.csproj" />
       <ProjectReference Include="..\RideTheBus.Game\RideTheBus.Game.csproj" />
+      <ProjectReference Include="..\RideTheBus.Infrastructure\RideTheBus.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>
