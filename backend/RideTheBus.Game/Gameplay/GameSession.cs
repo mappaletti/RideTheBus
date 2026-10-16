@@ -19,13 +19,15 @@ public sealed class GameSession
 
         if (stake > decimal.MaxValue / MaximumMultiplier) 
             throw new ArgumentOutOfRangeException(nameof(stake), stake, "Stake is too large and may cause an overflow.");
-        
+
+        Id = Guid.NewGuid();
         _cardSource = cardSource;
         Stake = stake;
         Status = GameStatus.InProgress;
         Stage = GameStage.Color;
         RevealedCards = _revealedCards.AsReadOnly();
     }
+    public Guid Id { get; }
 
     public IReadOnlyList<Card> RevealedCards { get; }
     public decimal Stake { get; }
