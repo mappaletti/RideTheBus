@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RideTheBus.Game", "RideTheB
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RideTheBus.Game.Tests", "RideTheBus.Game.Tests\RideTheBus.Game.Tests.csproj", "{DD8A6AC5-FD51-4D99-A6FD-6BF5208EF3ED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RideTheBus.Api", "RideTheBus.Api\RideTheBus.Api.csproj", "{25AE0315-AA9A-41AF-BA36-8D0AD4DCD67C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{DD8A6AC5-FD51-4D99-A6FD-6BF5208EF3ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD8A6AC5-FD51-4D99-A6FD-6BF5208EF3ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DD8A6AC5-FD51-4D99-A6FD-6BF5208EF3ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25AE0315-AA9A-41AF-BA36-8D0AD4DCD67C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25AE0315-AA9A-41AF-BA36-8D0AD4DCD67C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25AE0315-AA9A-41AF-BA36-8D0AD4DCD67C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25AE0315-AA9A-41AF-BA36-8D0AD4DCD67C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
