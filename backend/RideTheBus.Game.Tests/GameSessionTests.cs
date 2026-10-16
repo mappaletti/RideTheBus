@@ -6,6 +6,19 @@ namespace RideTheBus.Game.Gameplay.Tests;
 public sealed class GameSessionTests
 {
     [Fact]
+    public void NewGame_ShouldHaveNonEmptyId()
+    {
+        // arrange
+        var deck = new Deck(new Random(42));
+        
+        // act
+        var game = new GameSession(100m, deck);
+        
+        // assert
+        Assert.NotEqual(Guid.Empty, game.Id);
+    }
+    
+    [Fact]
     public void NewGame_ShouldStartInProgressAtColorStage()
     {
         // Arrange
