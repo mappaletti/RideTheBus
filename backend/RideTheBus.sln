@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RideTheBus.Application", "R
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RideTheBus.Infrastructure", "RideTheBus.Infrastructure\RideTheBus.Infrastructure.csproj", "{9574420F-64F7-444C-8C24-65D103BBB469}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RideTheBus.Infrastructure.Tests", "RideTheBus.Infrastructure.Tests\RideTheBus.Infrastructure.Tests.csproj", "{7A94BCF6-6E2D-44C8-BC50-D81DB0F9905E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{9574420F-64F7-444C-8C24-65D103BBB469}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9574420F-64F7-444C-8C24-65D103BBB469}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9574420F-64F7-444C-8C24-65D103BBB469}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A94BCF6-6E2D-44C8-BC50-D81DB0F9905E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A94BCF6-6E2D-44C8-BC50-D81DB0F9905E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A94BCF6-6E2D-44C8-BC50-D81DB0F9905E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A94BCF6-6E2D-44C8-BC50-D81DB0F9905E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
