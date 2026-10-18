@@ -1,5 +1,7 @@
 using Serilog;
 using Serilog.Events;
+using RideTheBus.Application.Games;
+using RideTheBus.Infrastructure.Games;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,10 @@ builder.Services.AddSerilog(configuration =>
         MinimumLevel.Information().
         MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning).
         WriteTo.Console());
+
+builder.Services.AddScoped<CreateGame>();
+
+builder.Services.AddSingleton<IGameSessionStore, InMemoryGameSessionStore>();
 
 var app = builder.Build();
 
