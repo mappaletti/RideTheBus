@@ -19,4 +19,10 @@ public class CreateGameTests
         Assert.Equal(100m, game.Stake);
         Assert.Same(game, store.AddedGame);
     }
+    
+    [Fact]
+    public void Constructor_WithNullStore_ShouldThrowArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => new CreateGame(null!));
+    }
 }

@@ -9,6 +9,8 @@ public sealed class CreateGame
 
     public CreateGame(IGameSessionStore store)
     {
+        ArgumentNullException.ThrowIfNull(store);
+
         _store = store;
     }
 
