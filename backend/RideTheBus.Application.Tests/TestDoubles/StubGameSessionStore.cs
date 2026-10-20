@@ -6,6 +6,8 @@ namespace RideTheBus.Application.Tests.TestDoubles;
 public sealed class StubGameSessionStore : IGameSessionStore
 {
     public GameSession? AddedGame { get; private set; }
+    public GameSession? GameToReturn { get; set; }
+    public Guid? RequestedId { get; private set; }
     
     public void Add(GameSession game)
     {
@@ -14,6 +16,7 @@ public sealed class StubGameSessionStore : IGameSessionStore
 
     public GameSession? GetById(Guid id)
     {
-        throw new NotImplementedException();
+        RequestedId = id;
+        return  GameToReturn;
     }
 }
