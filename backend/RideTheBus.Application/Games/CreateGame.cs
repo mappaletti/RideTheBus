@@ -11,7 +11,7 @@ public sealed class CreateGame
     {
         ArgumentNullException.ThrowIfNull(store);
 
-        _store = store;
+        _store = store; 
     }
 
     public GameSession Execute(decimal stake)
