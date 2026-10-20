@@ -1,6 +1,7 @@
-@RideTheBus.Api_HostAddress = http://localhost:5211
+### Создать партию
+POST https://localhost:7090/games
+Content-Type: application/json
 
-GET {{RideTheBus.Api_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
+{
+  "stake": 100
+}

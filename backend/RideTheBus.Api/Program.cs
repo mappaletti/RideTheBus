@@ -2,6 +2,7 @@ using Serilog;
 using Serilog.Events;
 using RideTheBus.Application.Games;
 using RideTheBus.Infrastructure.Games;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,14 @@ builder.Services.AddSerilog(configuration =>
 builder.Services.AddScoped<CreateGame>();
 
 builder.Services.AddSingleton<IGameSessionStore, InMemoryGameSessionStore>();
+
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
+    });
 
 var app = builder.Build();
 
