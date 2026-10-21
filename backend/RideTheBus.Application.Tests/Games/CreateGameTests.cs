@@ -44,4 +44,18 @@ public class CreateGameTests
         Assert.Same(game, foundGame);
         Assert.Equal(game.Id, store.RequestedId);
     }
+
+    [Fact]
+    public void Execute_WhenGameDoesNotExist_ShouldReturnNull()
+    {
+        // arrange
+        var store = new StubGameSessionStore();
+        var useCase = new GetGame(store);
+        
+        // act
+        var game = useCase.Execute(Guid.NewGuid());
+
+        // assert
+        Assert.Null(game);
+    }
 }
