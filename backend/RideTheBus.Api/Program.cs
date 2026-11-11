@@ -19,6 +19,7 @@ builder.Services.AddSerilog(configuration =>
         WriteTo.Console());
 
 builder.Services.AddScoped<CreateGame>();
+builder.Services.AddScoped<GetGame>();
 
 builder.Services.AddSingleton<IGameSessionStore, InMemoryGameSessionStore>();
 
