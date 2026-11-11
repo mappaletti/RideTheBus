@@ -13,3 +13,19 @@ Accept: application/json
 ###
 GET http://localhost:5211/games/00000000-0000-0000-0000-000000000000
 Accept: application/json
+
+###
+POST http://localhost:5211/games/3eb1959d-5e37-4e69-abdd-b3ea1ec2b3cc/guess-color
+Content-Type: application/json
+
+{
+  "choice": "Red"
+}
+
+###
+POST http://localhost:5211/games/7f9daa2b-55a4-4356-9d5e-d7bf0a170228/guess-color
+Content-Type: application/json
+
+{
+  "choice": 666
+}

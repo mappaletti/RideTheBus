@@ -10,11 +10,13 @@ public class GamesController : ControllerBase
 {
     private readonly CreateGame _createGame;
     private readonly GetGame _getGame;
+    private readonly GuessColor _guessColor;
 
-    public GamesController(CreateGame createGame, GetGame getGame)
+    public GamesController(CreateGame createGame, GetGame getGame, GuessColor guessColor)
     {
         _createGame = createGame;
         _getGame = getGame;
+        _guessColor = guessColor;
     }
 
     [HttpPost]
@@ -33,5 +35,26 @@ public class GamesController : ControllerBase
         
         var response = GameResponseMapper.From(game);
         return Ok(response);
+    }
+
+    [HttpPost("{id:guid}/guess-color")]
+    public ActionResult<GameResponse> GuessColor(Guid id, [FromBody] GuessColorRequest request)
+    {
+        try
+        {
+            var game = _guessColor.Execute(id, request.Choice);
+            if (game == null) return NotFound();
+
+            var response = GameResponseMapper.From(game);
+            return Ok(response);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return BadRequest(new { message = "Unknown card color." });
+        }
+        catch (InvalidOperationException)
+        {
+            return Conflict(new {message="Color guess is not allowed in the current game state."});
+        }
     }
 }

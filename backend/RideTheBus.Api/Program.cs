@@ -20,6 +20,7 @@ builder.Services.AddSerilog(configuration =>
 
 builder.Services.AddScoped<CreateGame>();
 builder.Services.AddScoped<GetGame>();
+builder.Services.AddScoped<GuessColor>();
 
 builder.Services.AddSingleton<IGameSessionStore, InMemoryGameSessionStore>();
 
